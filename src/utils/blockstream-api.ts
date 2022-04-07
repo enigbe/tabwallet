@@ -1,3 +1,5 @@
+import axios from 'axios'; 
+
 import {
   Address,
   BlockstreamAPITransactionResponse,
@@ -7,7 +9,12 @@ import {
 export const getTransactionsFromAddress = async (
   address: Address
 ): Promise<BlockstreamAPITransactionResponse[]> => {
-  throw new Error("Function not implemented yet");
+
+  const BASE_URL = 'https://blockstream.info/testnet/api';
+  const { data } = await axios.get(`${BASE_URL}/${address}/txs`);
+
+  console.log('data')
+  return data;
 };
 
 export const getUtxosFromAddress = async (
