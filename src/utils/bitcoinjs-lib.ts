@@ -42,7 +42,7 @@ export const deriveChildPublicKey = (
   return child;
 };
 
-export const getAddressFromChildPubkey = (
+export const getP2wpkhAddressFromChildPubkey = (
   child: BIP32Interface
 ): payments.Payment => {
   /*

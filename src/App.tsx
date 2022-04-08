@@ -13,7 +13,7 @@ import Utxos from "src/pages/UTXOs";
 import Settings from "src/pages/Settings";
 
 import { Address, DecoratedTx, DecoratedUtxo, BlockstreamAPITransactionResponse } from "src/types";
-import { getNewMnemonic, getMasterPrivateKey, getXpubFromPrivateKey, getAddressFromChildPubkey, deriveChildPublicKey } from "src/utils/bitcoinjs-lib"
+import { getNewMnemonic, getMasterPrivateKey, getXpubFromPrivateKey, getP2wpkhAddressFromChildPubkey, deriveChildPublicKey } from "src/utils/bitcoinjs-lib"
 import { getTransactionsFromAddress, getUtxosFromAddress } from "./utils/blockstream-api";
 import { serializeTxs } from "./utils";
 
@@ -26,6 +26,7 @@ export default function App() {
   const [changeAddresses, setChangeAddresses] = useState<Address[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [transactions, setTransactions] = useState<DecoratedTx[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [utxos, setUtxos] = useState<DecoratedUtxo[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [watchOnly, setWatchOnly] = useState<boolean>(false)
 
   // Mnemonic / Private Key / XPub
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function App() {
       for (let i = 0; i < 10; i++) {
         const currentDerivationPath = `0/${i}`;
         const currentChildPubKey = deriveChildPublicKey(xpub, currentDerivationPath);
-        const currentAddress = getAddressFromChildPubkey(currentChildPubKey);
+        const currentAddress = getP2wpkhAddressFromChildPubkey(currentChildPubKey);
 
         currentAddressBatch.push({
           ...currentAddress, 
@@ -74,7 +75,7 @@ export default function App() {
       for (let i = 0; i < 10; i++) {
         const currentDerivationPath = `1/${i}`;
         const currentChildPubKey = deriveChildPublicKey(xpub, currentDerivationPath);
-        const currentAddress = getAddressFromChildPubkey(currentChildPubKey);
+        const currentAddress = getP2wpkhAddressFromChildPubkey(currentChildPubKey);
 
         changeChangeAddress.push({
           ...currentAddress, 
@@ -154,7 +155,7 @@ export default function App() {
 
   return (
     <Router>
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} watchOnly={watchOnly}/>
       <div className="md:pl-64 flex flex-col flex-1">
         <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-100">
           <button
@@ -193,7 +194,7 @@ export default function App() {
             <Utxos utxos={utxos} />
           </Route>
           <Route exact path="/settings">
-            <Settings mnemonic={mnemonic} xpub={xpub} />
+            <Settings mnemonic={mnemonic} xpub={xpub} setWatchOnly={setWatchOnly} watchOnly={watchOnly}/>
           </Route>
         </Switch>
       </div>

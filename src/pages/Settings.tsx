@@ -8,9 +8,11 @@ import { CopyCommand } from "src/pages/Instructions/components";
 interface Props {
   mnemonic: string;
   xpub: string;
+  setWatchOnly: (value: boolean) => void;
+  watchOnly: boolean
 }
-
-export default function Settings({ mnemonic, xpub }: Props) {
+// WatchOnly prop help users toggle between the wallet mode they would prefer
+export default function Settings({ mnemonic, xpub, setWatchOnly, watchOnly }: Props) {
   const [showMnemonic, setShowMnemonic] = useState(false);
 
   const CurrentEyeIcon = showMnemonic ? EyeIcon : EyeOffIcon;
@@ -48,6 +50,13 @@ export default function Settings({ mnemonic, xpub }: Props) {
               </h1>
               <div className="mt-4">Click to copy xpub: </div>
               <CopyCommand command={xpub} showCommandArrow={true} />
+            </div>
+            <div className="flex flex-col py-5">
+              <div className="flex items-center justify-between">
+              <h2 className="text-xl font-medium text-gray-900">Watch Only Mode</h2>
+              <button className={`px-6 py-1 rounded-md ${watchOnly ? "bg-green-400" : "bg-red-400"}`} onClick={() => setWatchOnly(!watchOnly)}>{watchOnly ? "Activated": "Deactivated"}</button>
+              </div>
+              <span className="text-xs text-gray-500">Click to change Wallet Mode</span>
             </div>
           </div>
         </div>

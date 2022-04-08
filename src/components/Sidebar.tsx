@@ -19,9 +19,10 @@ function classNames(...classes: string[]) {
 interface Props {
   sidebarOpen: boolean;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  watchOnly: boolean
 }
 
-export default function Sidebar({ sidebarOpen, setSidebarOpen }: Props) {
+export default function Sidebar({ sidebarOpen, setSidebarOpen, watchOnly }: Props) {
   const location = useLocation();
   const navigation = [
     {
@@ -130,12 +131,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: Props) {
                     <Link
                       key={item.name}
                       to={item.href}
-                      className={classNames(
+                      className={`${classNames(
                         item.current
                           ? "bg-tabconf-blue-800 text-white"
                           : "text-tabconf-blue-200 hover:bg-tabconf-blue-600 hover:text-white",
                         "group flex items-center px-2 py-2 text-base font-medium rounded-md"
-                      )}
+                      )}${classNames(item.name === "Send" ? "bg-tabconf-blue-800": "")}`}
                     >
                       <item.icon
                         className={classNames(
@@ -202,12 +203,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: Props) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={classNames(
+                  className={`${classNames(
                     item.current
                       ? "bg-tabconf-blue-800 text-white"
                       : "text-tabconf-blue-200 hover:bg-tabconf-blue-600 hover:text-white",
-                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-                  )}
+                    "group flex items-center px-2 py-2 text-base font-medium rounded-md"
+                  )} ${classNames(item.name === "Send" && watchOnly ? "hidden": "")}`}
                 >
                   <item.icon
                     className={classNames(
