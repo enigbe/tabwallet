@@ -12,8 +12,10 @@ import Transactions from "src/pages/Transactions";
 import Utxos from "src/pages/UTXOs";
 import Settings from "src/pages/Settings";
 
-import { Address, DecoratedTx, DecoratedUtxo } from "src/types";
+import { Address, DecoratedTx, DecoratedUtxo, BlockstreamAPITransactionResponse } from "src/types";
 import { getNewMnemonic, getMasterPrivateKey, getXpubFromPrivateKey, getAddressFromChildPubkey, deriveChildPublicKey } from "src/utils/bitcoinjs-lib"
+import { getTransactionsFromAddress, getUtxosFromAddress } from "./utils/blockstream-api";
+import { serializeTxs } from "./utils";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -92,7 +94,21 @@ export default function App() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        throw new Error("Function not implemented yet");
+        const currentTransactionBatch: BlockstreamAPITransactionResponse[] = [];
+
+        for (let i = 0; i < 10; i++) {
+          const currentAddress = addresses[i];
+          const addressTransactions = await getTransactionsFromAddress(currentAddress);
+          currentTransactionBatch.push(...addressTransactions);
+        }
+
+        const serializedTxs = serializeTxs(
+          currentTransactionBatch,
+          addresses,
+          changeAddresses
+        );
+
+        setTransactions(serializedTxs);
       } catch (e) {
         console.log(e);
       }
@@ -105,7 +121,29 @@ export default function App() {
   useEffect(() => {
     const fetchUtxos = async () => {
       try {
-        throw new Error("Function not implemented yet");
+        const allAddresses: Address[] = [...addresses, ...changeAddresses];
+        const deocratedUtxos: DecoratedUtxo[] = [];
+
+        for (let i = 0; i < allAddresses.length; i++) {
+          const currentAddress: Address = allAddresses[i];
+          const utxos = await getUtxosFromAddress(currentAddress);
+
+          for (let j = 0; j < utxos.length; j++) {
+            deocratedUtxos.push({
+              ...utxos[j],
+              address: currentAddress,
+              bip32Derivation: [
+                {
+                  pubkey: currentAddress.pubkey!,
+                  path: `m/84'/0'/0'/${currentAddress.derivationPath}`,
+                  masterFingerprint: masterFingerprint,
+                },
+              ],
+            });
+          }
+        }
+
+        setUtxos(deocratedUtxos);
       } catch (e) {
         console.log(e);
       }

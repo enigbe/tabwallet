@@ -1,6 +1,7 @@
 import { BIP32Interface, fromSeed, fromBase58 } from "bip32";
 import { payments, Psbt, networks } from "bitcoinjs-lib";
 import { generateMnemonic, mnemonicToSeed } from "bip39";
+import coinselect from "coinselect";
 
 import { Address, DecoratedUtxo } from "src/types";
 
@@ -69,12 +70,55 @@ export const createTransasction = async (
   amountInSatoshis: number,
   changeAddress: Address
 ): Promise<Psbt> => {
-  throw new Error("Function not implemented yet");
+  const { inputs, outputs, fee } = coinselect(
+    utxos,
+    [{address: recipientAddress, value: amountInSatoshis},],
+    1
+  );
+
+  if (!inputs || !outputs) throw new Error("Unable to construct transaction");
+  if (fee > amountInSatoshis) throw new Error("Fee is too high");
+
+  const psbt = new Psbt({network: networks.testnet});
+  psbt.setVersion(2);
+  psbt.setLocktime(0);
+
+  inputs.forEach((input) => {
+    psbt.addInput({
+      hash: input.txid,
+      index: input.vout,
+      sequence: 0xfffffffd,
+      witnessUtxo: {
+        value: input.value,
+        script: input.address.output!,
+      },
+      bip32Derivation: input.bip32Derivation,
+    });
+  });
+
+  outputs.forEach((output) => {
+    if (!output.address) {
+      output.address = changeAddress.address!;
+    }
+
+    psbt.addOutput({
+      address: output.address,
+      value: output.value,
+    });
+  });
+
+  return psbt;
 };
 
 export const signTransaction = async (
   psbt: any,
   mnemonic: string
 ): Promise<Psbt> => {
-  throw new Error("Function not implemented yet");
+  const seed = await mnemonicToSeed(mnemonic);
+  const root = fromSeed(seed, networks.testnet);
+
+  psbt.signAllInputsHD(root);
+  psbt.validateSignaturesOfAllInputs();
+  psbt.finalizeAllInputs();
+  return psbt;
 };

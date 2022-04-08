@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Psbt } from "bitcoinjs-lib";
 
 import { broadcastTx } from "src/utils/blockstream-api";
+import { createTransasction, signTransaction } from "src/utils/bitcoinjs-lib"
 
 import CreateTxForm from "./components/CreateTxForm";
 import TransactionSummary from "./components/TransactionSummary";
@@ -24,7 +25,10 @@ export default function Send({ utxos, changeAddresses, mnemonic }: Props) {
     amountToSend: number
   ) => {
     try {
-      throw new Error("Function not implemented yet");
+      let currentPsbt = await createTransasction(utxos, recipientAddress, amountToSend, changeAddresses[0]);
+      let signedPsbt = await signTransaction(currentPsbt, mnemonic);
+      setTransaction(signedPsbt);
+      setStep(1);
     } catch (e) {
       setError((e as Error).message);
     }
